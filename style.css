@@ -4,10 +4,14 @@ body {
   padding: 1rem;
   max-width: 600px;
 }
+h1 {
+  text-align: center;
+}
 .controls {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 .field {
   flex: 1 1 100%;
@@ -15,14 +19,33 @@ body {
   flex-direction: column;
 }
 .field input {
-  padding: 0.5rem;
-  font-size: 1rem;
+  padding: 0.75rem;
+  font-size: 1.1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+.result p strong {
+  display: block;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
 .result p {
-  font-size: 1.2rem;
-  margin-top: 1rem;
+  margin: 0.25rem 0;
+}
+.summaries {
+  display: grid;
+  grid-template-columns: 14em auto;
+  gap: 0.25rem 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.summaries .label {
+  text-align: right;
+  font-weight: bold;
+  padding-right: 0.5rem;
+}
+.summaries .value {
+  text-align: left;
 }
 table {
   width: 100%;
@@ -37,11 +60,10 @@ th, td {
 th {
   background: #f4f4f4;
 }
-@media (min-width: 400px) {
-  .field { flex: 1 1 calc(33% - 1rem); }
-}
-
 #prob-table tbody tr:nth-child(5n) td {
   color: red;
   font-weight: bold;
+}
+@media (min-width: 400px) {
+  .field { flex: 1 1 calc(33% - 1rem); }
 }
