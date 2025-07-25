@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>一番賞機率計算器</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>一番賞機率計算器</h1>
+  <div>
+    <label>剩餘總抽數 (Total): <input id="total" type="number" value="80" /></label>
+    <label>目標賞剩餘數 (Want): <input id="want" type="number" value="5" /></label>
+    <label>抽取次數 (N): <input id="n" type="number" value="1" /></label>
+  </div>
+  <div class="result">
+    <p>超幾何機率 (Hypergeometric for N=<span id="current-n">5</span>): <span id="p_hyper">-</span></p>
+  </div>
+  <h2>1~30 抽機率列表</h2>
+  <table id="prob-table">
+    <thead>
+      <tr><th>抽數 N</th><th>機率 P(≥1)</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <script src="script.js"></script>
+</body>
+</html>
