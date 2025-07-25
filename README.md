@@ -1,2 +1,9 @@
-# IchibankujiCalculator
-一番賞簡易計算機
+# 一番賞簡易計算機
+
+計算 N 抽內取得目標賞至少其一的機率
+https://jwander0820.github.io/IchibankujiCalculator/
+
+## 使用方法: 
+1. 剩餘總抽數 (Total): 填入總抽數(包含目標賞)
+2. 目標賞剩餘數 (Want): 填入目標賞剩餘總數 Ex. 目標 A賞剩1、B賞剩2，則填入目標賞剩餘數=3
+3. 抽取次數 (N): 下方會計算N抽內取得的機率，也會列出1~30抽取得目標賞其一的機率
