@@ -3,6 +3,8 @@ body {
   margin: auto;
   padding: 1rem;
   max-width: 600px;
+  background-color: #ffffff;
+  color: #000000;
 }
 h1 {
   text-align: center;
@@ -63,6 +65,10 @@ th {
 #prob-table tbody tr:nth-child(5n) td {
   color: red;
   font-weight: bold;
+}
+/* 使百分比文字為紅色 */
+#p_hyper, #p20, #p50 {
+  color: red;
 }
 @media (min-width: 400px) {
   .field { flex: 1 1 calc(33% - 1rem); }

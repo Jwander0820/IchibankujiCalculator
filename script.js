@@ -9,6 +9,9 @@ const n50Span = document.getElementById("n50");
 const p50Span = document.getElementById("p50");
 const tbody = document.querySelector("#prob-table tbody");
 
+// 支援搜尋上限可自定義
+const MAX_SEARCH = 30;
+
 function comb(n, k) {
   if (k < 0 || k > n) return 0;
   let result = 1;
@@ -29,25 +32,25 @@ function calculate() {
   // 主要結果
   const p_h = hyperProb(T, K, N) * 100;
   currentNSpan.textContent = N;
-  pHyperSpan.textContent = p_h.toFixed(2);
+  pHyperSpan.textContent = p_h.toFixed(2) + '%';
 
   // 計算達標最少抽數與對應機率
   let found20 = "-", found50 = "-";
-  for (let i = 1; i <= 30; i++) {
+  for (let i = 1; i <= MAX_SEARCH; i++) {
     const p = hyperProb(T, K, i);
     if (found20 === "-" && p >= 0.20) found20 = i;
     if (found50 === "-" && p >= 0.50) found50 = i;
     if (found20 !== "-" && found50 !== "-") break;
   }
   n20Span.textContent = found20;
-  p20Span.textContent = found20 === "-" ? "-" : (hyperProb(T, K, found20) * 100).toFixed(2);
+  p20Span.textContent = found20 === "-" ? "-" : (hyperProb(T, K, found20) * 100).toFixed(2) + '%';
   n50Span.textContent = found50;
-  p50Span.textContent = found50 === "-" ? "-" : (hyperProb(T, K, found50) * 100).toFixed(2);
+  p50Span.textContent = found50 === "-" ? "-" : (hyperProb(T, K, found50) * 100).toFixed(2) + '%';
 
   // 列表
   tbody.textContent = '';
   const frag = document.createDocumentFragment();
-  for (let i = 1; i <= 30; i++) {
+  for (let i = 1; i <= MAX_SEARCH; i++) {
     const p = (hyperProb(T, K, i) * 100).toFixed(2);
     const row = document.createElement("tr");
     row.innerHTML = `<td>${i}</td><td>${p}%</td>`;
