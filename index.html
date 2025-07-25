@@ -8,13 +8,22 @@
 </head>
 <body>
   <h1>一番賞機率計算器</h1>
-  <div>
-    <label>剩餘總抽數 (Total): <input id="total" type="number" value="80" /></label>
-    <label>目標賞剩餘數 (Want): <input id="want" type="number" value="5" /></label>
-    <label>抽取次數 (N): <input id="n" type="number" value="1" /></label>
-  </div>
+  <form class="controls">
+    <div class="field">
+      <label for="total">剩餘總抽數 (Total):</label>
+      <input id="total" type="number" value="80" min="0" inputmode="numeric" />
+    </div>
+    <div class="field">
+      <label for="want">目標賞剩餘數 (Want):</label>
+      <input id="want" type="number" value="5" min="0" inputmode="numeric" />
+    </div>
+    <div class="field">
+      <label for="n">抽取次數 (N):</label>
+      <input id="n" type="number" value="1" min="1" inputmode="numeric" />
+    </div>
+  </form>
   <div class="result">
-    <p>超幾何機率 (Hypergeometric for N=<span id="current-n">5</span>): <span id="p_hyper">-</span></p>
+    <p><span id="current-n">5</span> 抽內至少取得目標賞其一的機率: <span id="p_hyper">-</span>%</p>
   </div>
   <h2>1~30 抽機率列表</h2>
   <table id="prob-table">

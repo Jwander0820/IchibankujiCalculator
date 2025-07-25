@@ -21,15 +21,15 @@ function calculate() {
   const K = +wantInput.value;
   const N = +nInput.value;
   if (T <= 0 || K < 0 || N < 0) return;
-  const p_hyper = hyperProb(T, K, N);
+  const p_hyper = hyperProb(T, K, N) * 100;
   currentNSpan.textContent = N;
-  pHyperSpan.textContent = p_hyper.toFixed(4);
+  pHyperSpan.textContent = p_hyper.toFixed(2);
   tbody.textContent = '';
   const frag = document.createDocumentFragment();
   for (let i = 1; i <= 30; i++) {
-    const p = hyperProb(T, K, i).toFixed(4);
+    const p = (hyperProb(T, K, i) * 100).toFixed(2);
     const row = document.createElement("tr");
-    row.innerHTML = `<td>${i}</td><td>${p}</td>`;
+    row.innerHTML = `<td>${i}</td><td>${p}%</td>`;
     frag.appendChild(row);
   }
   tbody.appendChild(frag);
