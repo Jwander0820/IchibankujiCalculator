@@ -7,33 +7,66 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>一番賞機率計算器</h1>
-  <form class="controls">
-    <div class="field">
-      <label for="total">剩餘總抽數 (Total):</label>
-      <input id="total" type="number" value="80" min="0" inputmode="numeric" onfocus="this.select()" />
-    </div>
-    <div class="field">
-      <label for="want">目標賞剩餘數 (Want):</label>
-      <input id="want" type="number" value="5" min="0" inputmode="numeric" onfocus="this.select()" />
-    </div>
-    <div class="field">
-      <label for="n">抽取次數 (N):</label>
-      <input id="n" type="number" value="1" min="1" inputmode="numeric" onfocus="this.select()" />
-    </div>
-  </form>
-  <div class="result">
-    <p><strong><span id="current-n">5</span> 抽內至少取得目標賞其一的機率: <span id="p_hyper">-</span></strong></p>
-    <p>達成機率 &gt;20% 所需最少抽數: <b><span id="n20">-</span></b> 抽；此時機率為 <b><span id="p20">-</span></b></p>
-    <p>達成機率 &gt;50% 所需最少抽數: <b><span id="n50">-</span></b> 抽；此時機率為 <b><span id="p50">-</span></b></p>
-  </div>
-  <h2>1~30 抽機率列表</h2>
-  <table id="prob-table">
-    <thead>
-      <tr><th>抽數 N</th><th>機率 P(≥1)</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <main class="app-shell">
+    <header class="app-header">
+      <h1>一番賞機率計算器</h1>
+      <p class="subtitle">更快判斷「要不要補抽」：即時計算機率、達標抽數與成本。</p>
+    </header>
+
+    <section class="card controls-card">
+      <h2>基本設定</h2>
+      <form class="controls" autocomplete="off">
+        <div class="field">
+          <label for="total">剩餘總抽數 (Total)</label>
+          <input id="total" type="number" value="80" min="0" inputmode="numeric" onfocus="this.select()" />
+        </div>
+        <div class="field">
+          <label for="want">目標賞剩餘數 (Want)</label>
+          <input id="want" type="number" value="5" min="0" inputmode="numeric" onfocus="this.select()" />
+        </div>
+        <div class="field">
+          <label for="n">預計抽取次數 (N)</label>
+          <input id="n" type="number" value="1" min="1" inputmode="numeric" onfocus="this.select()" />
+        </div>
+        <div class="field">
+          <label for="target-prob">目標達成率 (%)</label>
+          <input id="target-prob" type="number" value="70" min="1" max="99.9" step="0.1" inputmode="decimal" onfocus="this.select()" />
+        </div>
+        <div class="field">
+          <label for="price">每抽價格 (NTD)</label>
+          <input id="price" type="number" value="280" min="0" step="1" inputmode="numeric" onfocus="this.select()" />
+        </div>
+      </form>
+      <div class="toolbar">
+        <button id="reset-btn" type="button">重設預設值</button>
+        <button id="share-btn" type="button">複製分享連結</button>
+      </div>
+      <p id="share-msg" class="hint" aria-live="polite"></p>
+    </section>
+
+    <section class="card result">
+      <h2>結果總覽</h2>
+      <p class="headline"><strong><span id="current-n">1</span> 抽內至少取得目標賞其一的機率：<span id="p_hyper">-</span></strong></p>
+      <div class="summary-grid">
+        <p>達成率 ≥20% 的最少抽數</p><p><b><span id="n20">-</span></b> 抽（<span id="p20">-</span>）</p>
+        <p>達成率 ≥50% 的最少抽數</p><p><b><span id="n50">-</span></b> 抽（<span id="p50">-</span>）</p>
+        <p>達成率 ≥<span id="target-label">70</span>% 的最少抽數</p><p><b><span id="ntarget">-</span></b> 抽（<span id="ptarget">-</span>）</p>
+        <p>預估成本（以 N 計）</p><p><b id="cost-current">-</b></p>
+        <p>達成目標達成率預估成本</p><p><b id="cost-target">-</b></p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>1~30 抽機率列表</h2>
+      <table id="prob-table">
+        <thead>
+          <tr><th>抽數 N</th><th>機率 P(≥1)</th><th>累積成本</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
   <script src="script.js"></script>
 </body>
 </html>
