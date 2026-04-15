@@ -1,75 +1,168 @@
-body {
-  font-family: sans-serif;
-  margin: auto;
-  padding: 1rem;
-  max-width: 600px;
-  background-color: #ffffff;
-  color: #000000;
+:root {
+  color-scheme: light;
+  --bg: #f3f6fb;
+  --card: #ffffff;
+  --text: #1a1f2e;
+  --muted: #63708b;
+  --primary: #2e6df6;
+  --primary-soft: #dfe9ff;
+  --border: #d9e0ef;
+  --danger: #d82a4e;
 }
-h1 {
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Noto Sans TC", "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 1.25rem;
+  background: radial-gradient(circle at top, #fbfdff, var(--bg));
+  color: var(--text);
+}
+
+.app-shell {
+  max-width: 880px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.app-header {
   text-align: center;
 }
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
 }
+
+.subtitle {
+  margin-top: 0.5rem;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 6px 18px rgba(24, 34, 64, 0.06);
+}
+
+.card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.8rem;
+}
+
 .field {
-  flex: 1 1 100%;
   display: flex;
   flex-direction: column;
+  gap: 0.35rem;
 }
+
+label {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .field input {
-  padding: 0.75rem;
-  font-size: 1.1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 1rem;
 }
-.result p strong {
-  display: block;
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
+
+.field input:focus {
+  outline: 2px solid var(--primary-soft);
+  border-color: var(--primary);
 }
-.result p {
-  margin: 0.25rem 0;
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
 }
-.summaries {
+
+button {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: white;
+  padding: 0.55rem 0.8rem;
+  border-radius: 9px;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+button#reset-btn {
+  background: #fff;
+  color: var(--primary);
+}
+
+.hint {
+  min-height: 1.2rem;
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.headline {
+  margin: 0 0 0.65rem;
+  font-size: 1.15rem;
+}
+
+#p_hyper,
+#p20,
+#p50,
+#ptarget {
+  color: var(--danger);
+}
+
+.summary-grid {
   display: grid;
-  grid-template-columns: 14em auto;
-  gap: 0.25rem 0.5rem;
-  align-items: center;
-  margin-bottom: 1rem;
+  grid-template-columns: minmax(180px, 1fr) 1fr;
+  gap: 0.4rem 1rem;
 }
-.summaries .label {
-  text-align: right;
-  font-weight: bold;
-  padding-right: 0.5rem;
+
+.summary-grid p {
+  margin: 0;
+  padding: 0.2rem 0;
 }
-.summaries .value {
-  text-align: left;
-}
+
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
 }
-th, td {
-  border: 1px solid #ccc;
-  padding: 0.5rem;
+
+th,
+td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.55rem;
   text-align: center;
 }
+
 th {
-  background: #f4f4f4;
+  background: #f7f9fe;
 }
+
 #prob-table tbody tr:nth-child(5n) td {
-  color: red;
-  font-weight: bold;
+  color: var(--primary);
+  font-weight: 700;
 }
-/* 使百分比文字為紅色 */
-#p_hyper, #p20, #p50 {
-  color: red;
-}
-@media (min-width: 400px) {
-  .field { flex: 1 1 calc(33% - 1rem); }
+
+@media (max-width: 640px) {
+  body { padding: 0.75rem; }
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
