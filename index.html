@@ -1,72 +1,155 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>一番賞機率計算器</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#e7352b">
+  <meta name="description" content="計算一番賞抽中目標賞的機率、預算與建議抽數，並保存想持續觀察的抽獎案例。">
+  <title>一番賞抽獎計算所</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="top-ribbon" aria-hidden="true"><span>ICHIBAN KUJI / ODDS LAB</span></div>
+
   <main class="app-shell">
-    <header class="app-header">
-      <h1>一番賞機率計算器</h1>
-      <p class="subtitle">更快判斷「要不要補抽」：即時計算機率、達標抽數與成本。</p>
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">一番賞・決策輔助工具</p>
+        <h1>這一抽，<br><em>值得嗎？</em></h1>
+        <p class="hero-lead">把剩餘抽數與目標賞放上桌，在心動以前，先看清楚機率與代價。</p>
+      </div>
+      <div class="hero-mark" aria-hidden="true">
+        <span class="hero-mark__small">ODDS</span>
+        <strong>一</strong>
+        <span>番判定</span>
+      </div>
     </header>
 
-    <section class="card controls-card">
-      <h2>基本設定</h2>
-      <form class="controls" autocomplete="off">
-        <div class="field">
-          <label for="total">剩餘總抽數 (Total)</label>
-          <input id="total" type="number" value="80" min="0" inputmode="numeric" onfocus="this.select()" />
+    <nav class="quick-presets" aria-label="快速情境">
+      <span class="quick-presets__label">快速帶入</span>
+      <button class="preset-chip" type="button" data-total="80" data-want="5" data-n="3">新品整套</button>
+      <button class="preset-chip" type="button" data-total="30" data-want="2" data-n="3">30 抽・2 目標賞</button>
+      <button class="preset-chip" type="button" data-total="15" data-want="1" data-n="3">尾盤追最後一賞</button>
+      <span id="saved-set-shortcuts" class="saved-set-shortcuts"></span>
+    </nav>
+
+    <div class="workspace-grid">
+      <section class="panel setup-panel" aria-labelledby="setup-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">SET UP</p>
+            <h2 id="setup-title">盤面設定</h2>
+          </div>
+          <button id="reset-btn" class="text-button" type="button">恢復預設</button>
         </div>
-        <div class="field">
-          <label for="want">目標賞剩餘數 (Want)</label>
-          <input id="want" type="number" value="5" min="0" inputmode="numeric" onfocus="this.select()" />
+
+        <form class="controls" autocomplete="off">
+          <label class="field field--strong" for="total">
+            <span>剩餘總抽數</span>
+            <span class="input-shell"><input id="total" type="number" value="80" min="1" inputmode="numeric"><small>抽</small></span>
+          </label>
+          <label class="field field--strong" for="want">
+            <span>剩餘目標賞</span>
+            <span class="input-shell"><input id="want" type="number" value="5" min="0" inputmode="numeric"><small>個</small></span>
+          </label>
+          <label class="field" for="n">
+            <span>打算抽幾次</span>
+            <span class="input-shell"><input id="n" type="number" value="1" min="1" inputmode="numeric"><small>抽</small></span>
+          </label>
+          <label class="field" for="target-prob">
+            <span>期望命中率</span>
+            <span class="input-shell"><input id="target-prob" type="number" value="20" min="1" max="99.9" step="0.1" inputmode="decimal"><small>%</small></span>
+          </label>
+          <label class="field field--wide" for="price">
+            <span>每抽價格</span>
+            <span class="input-shell input-shell--currency"><small>NT$</small><input id="price" type="number" value="335" min="0" step="1" inputmode="numeric"></span>
+          </label>
+        </form>
+
+        <p id="validation-msg" class="validation-msg" aria-live="polite"></p>
+        <div class="action-row">
+          <button id="share-btn" class="button button--dark" type="button">
+            <span>複製這組分析</span><span aria-hidden="true">↗</span>
+          </button>
         </div>
-        <div class="field">
-          <label for="n">預計抽取次數 (N)</label>
-          <input id="n" type="number" value="1" min="1" inputmode="numeric" onfocus="this.select()" />
+      </section>
+
+      <section class="result-ticket" aria-labelledby="result-title">
+        <div class="ticket-edge ticket-edge--top" aria-hidden="true"></div>
+        <div class="ticket-head">
+          <div>
+            <p>LIVE RESULT</p>
+            <h2 id="result-title">即時判定票</h2>
+          </div>
+          <span id="verdict-badge" class="verdict-badge">計算中</span>
         </div>
-        <div class="field">
-          <label for="target-prob">目標達成率 (%)</label>
-          <input id="target-prob" type="number" value="70" min="1" max="99.9" step="0.1" inputmode="decimal" onfocus="this.select()" />
+
+        <div class="chance-display">
+          <p>抽 <strong id="current-n">1</strong> 次，至少中一個目標賞</p>
+          <div><span id="p_hyper">—</span><small>%</small></div>
+          <div class="chance-track" aria-hidden="true"><span id="chance-bar"></span></div>
         </div>
-        <div class="field">
-          <label for="price">每抽價格 (NTD)</label>
-          <input id="price" type="number" value="280" min="0" step="1" inputmode="numeric" onfocus="this.select()" />
+
+        <dl class="ticket-stats">
+          <div><dt>本次預算</dt><dd id="cost-current">—</dd></div>
+          <div><dt><span id="target-label">70</span>% 需要</dt><dd><b id="ntarget">—</b> 抽</dd></div>
+          <div><dt>建議預算</dt><dd id="cost-target">—</dd></div>
+        </dl>
+
+        <div class="milestones">
+            <p>機率參考點</p>
+          <div class="milestone"><span>20%</span><strong id="n20">—</strong><small>抽・<span id="p20">—</span>%</small></div>
+          <div class="milestone"><span>50%</span><strong id="n50">—</strong><small>抽・<span id="p50">—</span>%</small></div>
         </div>
-      </form>
-      <div class="toolbar">
-        <button id="reset-btn" type="button">重設預設值</button>
-        <button id="share-btn" type="button">複製分享連結</button>
+        <p class="ticket-note">結果為機率估算，不代表一定中獎。請替運氣留點預算。</p>
+        <div class="ticket-edge ticket-edge--bottom" aria-hidden="true"></div>
+      </section>
+    </div>
+
+    <section class="watchlist" aria-labelledby="watchlist-title">
+      <div class="section-heading section-heading--watchlist">
+        <div>
+          <p class="section-kicker">WATCH LIST</p>
+          <h2 id="watchlist-title">觀察中的 Set</h2>
+          <p>把還沒到理想時機的盤面留在這裡，之後一鍵帶回比較。</p>
+        </div>
+        <form id="save-set-form" class="save-set-form">
+          <label for="set-name">案例名稱</label>
+          <div>
+            <input id="set-name" maxlength="28" placeholder="例：西門店・等 25 抽" required>
+            <button class="button button--yellow" type="submit">＋ 保存目前 Set</button>
+          </div>
+        </form>
       </div>
-      <p id="share-msg" class="hint" aria-live="polite"></p>
+      <div id="saved-sets" class="saved-sets"></div>
+      <div id="empty-sets" class="empty-sets">
+        <span aria-hidden="true">＋</span>
+        <p><strong>還沒有觀察案例</strong>替目前盤面命名並保存，就能在下次回來繼續追蹤。</p>
+      </div>
     </section>
 
-    <section class="card result">
-      <h2>結果總覽</h2>
-      <p class="headline"><strong><span id="current-n">1</span> 抽內至少取得目標賞其一的機率：<span id="p_hyper">-</span></strong></p>
-      <div class="summary-grid">
-        <p>達成率 ≥20% 的最少抽數</p><p><b><span id="n20">-</span></b> 抽（<span id="p20">-</span>）</p>
-        <p>達成率 ≥50% 的最少抽數</p><p><b><span id="n50">-</span></b> 抽（<span id="p50">-</span>）</p>
-        <p>達成率 ≥<span id="target-label">70</span>% 的最少抽數</p><p><b><span id="ntarget">-</span></b> 抽（<span id="ptarget">-</span>）</p>
-        <p>預估成本（以 N 計）</p><p><b id="cost-current">-</b></p>
-        <p>達成目標達成率預估成本</p><p><b id="cost-target">-</b></p>
+    <section class="probability-section" aria-labelledby="table-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">DRAW MAP</p>
+          <h2 id="table-title">1–30 抽機率地圖</h2>
+        </div>
+        <p>越接近期望值，標記越鮮明。</p>
       </div>
-    </section>
-
-    <section class="card">
-      <h2>1~30 抽機率列表</h2>
-      <table id="prob-table">
-        <thead>
-          <tr><th>抽數 N</th><th>機率 P(≥1)</th><th>累積成本</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-wrap">
+        <table id="prob-table">
+          <thead><tr><th>抽數</th><th>至少中一賞</th><th>累計預算</th><th>判定</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
   </main>
 
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <footer><span>ICHIBAN ODDS LAB</span><p>理性計算，開心抽賞。</p></footer>
   <script src="script.js"></script>
 </body>
 </html>
