@@ -24,8 +24,22 @@ const quickPresets = $(".quick-presets");
 const savedSetShortcuts = $("#saved-set-shortcuts");
 const activeSetStatus = $("#active-set-status");
 const toast = $("#toast");
+const simulationModal = $("#simulation-modal");
+const tearTicket = $("#tear-ticket");
+const ticketReveal = $("#ticket-reveal");
+const tearTrigger = $("#tear-trigger");
+const retrySimulation = $("#retry-simulation");
+const simulationActionButtons = document.querySelectorAll(".simulation-actions button");
 let toastTimer;
 let activeSetId = localStorage.getItem(ACTIVE_SET_KEY);
+let simulatedHits = 0;
+let simulationValues = null;
+let simulationReturnFocus = null;
+let tearPointerId = null;
+let tearDragStartX = 0;
+let tearDragDistance = 0;
+let suppressTearClick = false;
+let tearAnimationTimer = null;
 
 function comb(n, k) {
   if (k < 0 || k > n) return 0;
@@ -41,6 +55,35 @@ function hyperProb(total, targets, draws) {
   if (draws >= total) return 1;
   const validTargets = Math.min(targets, total);
   return 1 - comb(total - validTargets, draws) / comb(total, draws);
+}
+
+function randomUnit() {
+  if (globalThis.crypto?.getRandomValues) {
+    const value = new Uint32Array(1);
+    crypto.getRandomValues(value);
+    return value[0] / 4294967296;
+  }
+  return Math.random();
+}
+
+function simulateWithoutReplacement(total, targets, draws) {
+  let remainingTotal = total;
+  let remainingTargets = Math.min(targets, total);
+  let hits = 0;
+  const drawCount = Math.min(draws, total);
+
+  for (let i = 0; i < drawCount; i += 1) {
+    if (remainingTargets > 0 && randomUnit() < remainingTargets / remainingTotal) {
+      hits += 1;
+      remainingTargets -= 1;
+    }
+    remainingTotal -= 1;
+  }
+  return hits;
+}
+
+function randomTicketCode() {
+  return `KUJI-${String(Math.floor(randomUnit() * 1000000)).padStart(6, "0")}`;
 }
 
 function currency(value) {
@@ -80,6 +123,92 @@ function showToast(message) {
   toast.classList.add("is-visible");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2600);
+}
+
+function prepareSimulation() {
+  simulationValues = readValues();
+  simulatedHits = simulateWithoutReplacement(simulationValues.total, simulationValues.want, simulationValues.n);
+  const probability = hyperProb(simulationValues.total, simulationValues.want, simulationValues.n) * 100;
+
+  $("#sim-targets").textContent = simulationValues.want;
+  $("#sim-total").textContent = simulationValues.total;
+  $("#sim-draws").textContent = simulationValues.n;
+  $("#sim-probability").textContent = probability.toFixed(2);
+  $("#sim-ticket-code").textContent = randomTicketCode();
+  $("#sim-result-kicker").textContent = "RESULT";
+  $("#sim-result-title").textContent = "結果藏在籤紙裡";
+  $("#sim-result-detail").textContent = "撕開後才會揭曉";
+
+  clearTimeout(tearAnimationTimer);
+  ticketReveal.removeAttribute("aria-hidden");
+  tearTicket.classList.remove("is-revealed", "is-tearing", "is-dragging");
+  tearTicket.style.removeProperty("--tear-edge-x");
+  tearTicket.style.removeProperty("--tear-curl");
+  tearTrigger.style.removeProperty("--tear-x");
+  tearTrigger.style.removeProperty("--tear-rotate");
+  tearTrigger.style.removeProperty("--tear-tilt");
+  ticketReveal.className = "ticket-reveal";
+  simulationModal.classList.remove("is-revealed");
+  tearTrigger.disabled = false;
+  simulationActionButtons.forEach((button) => { button.disabled = true; });
+  tearTrigger.focus();
+}
+
+function openSimulation() {
+  simulationReturnFocus = document.activeElement;
+  simulationModal.hidden = false;
+  document.body.classList.add("modal-open");
+  prepareSimulation();
+}
+
+function revealSimulation() {
+  if (tearTicket.classList.contains("is-revealed")) return;
+  clearTimeout(tearAnimationTimer);
+  const isHit = simulatedHits > 0;
+  $("#sim-result-kicker").textContent = isHit ? "TARGET HIT" : "MISS";
+  $("#sim-result-title").textContent = isHit ? "中啦！" : "沒中 QQ…";
+  $("#sim-result-detail").textContent = isHit
+    ? `這次模擬抽中 ${simulatedHits} 個目標賞`
+    : `模擬抽了 ${simulationValues.n} 次，和目標賞擦身而過`;
+  ticketReveal.classList.add(isHit ? "is-hit" : "is-miss");
+  ticketReveal.removeAttribute("aria-hidden");
+  tearTicket.classList.remove("is-tearing", "is-dragging");
+  tearTicket.style.removeProperty("--tear-edge-x");
+  tearTicket.style.removeProperty("--tear-curl");
+  tearTrigger.style.removeProperty("--tear-x");
+  tearTrigger.style.removeProperty("--tear-rotate");
+  tearTrigger.style.removeProperty("--tear-tilt");
+  tearTicket.classList.add("is-revealed");
+  simulationModal.classList.add("is-revealed");
+  tearTrigger.disabled = true;
+  simulationActionButtons.forEach((button) => { button.disabled = false; });
+}
+
+function stageSimulationOutcome() {
+  const isHit = simulatedHits > 0;
+  $("#sim-result-kicker").textContent = isHit ? "TARGET HIT" : "MISS";
+  $("#sim-result-title").textContent = isHit ? "中啦！" : "沒中 QQ…";
+  $("#sim-result-detail").textContent = isHit
+    ? `這次模擬抽中 ${simulatedHits} 個目標賞`
+    : `模擬抽了 ${simulationValues.n} 次，和目標賞擦身而過`;
+  ticketReveal.setAttribute("aria-hidden", "true");
+}
+
+function startAutomaticTear() {
+  if (tearTicket.classList.contains("is-revealed") || tearTicket.classList.contains("is-tearing")) return;
+  stageSimulationOutcome();
+  tearTicket.classList.add("is-tearing");
+  tearTrigger.disabled = true;
+  tearAnimationTimer = setTimeout(revealSimulation, 880);
+}
+
+function closeSimulation() {
+  clearTimeout(tearAnimationTimer);
+  tearPointerId = null;
+  simulationModal.hidden = true;
+  simulationModal.classList.remove("is-revealed");
+  document.body.classList.remove("modal-open");
+  simulationReturnFocus?.focus();
 }
 
 function persistState(values) {
@@ -294,6 +423,65 @@ $("#share-btn").addEventListener("click", async () => {
   const url = `${location.origin}${location.pathname}?${new URLSearchParams(values)}`;
   try { await navigator.clipboard.writeText(url); showToast("分析連結已複製"); }
   catch { window.prompt("複製以下分析連結", url); }
+});
+
+$("#simulate-btn").addEventListener("click", openSimulation);
+tearTrigger.addEventListener("pointerdown", (event) => {
+  if (event.button !== 0 || tearTicket.classList.contains("is-revealed")) return;
+  tearPointerId = event.pointerId;
+  tearDragStartX = event.clientX;
+  tearDragDistance = 0;
+  suppressTearClick = false;
+  stageSimulationOutcome();
+  tearTicket.classList.add("is-dragging");
+  tearTrigger.setPointerCapture(event.pointerId);
+});
+tearTrigger.addEventListener("pointermove", (event) => {
+  if (event.pointerId !== tearPointerId) return;
+  const maxDistance = tearTicket.clientWidth * 0.78;
+  tearDragDistance = Math.min(maxDistance, Math.max(0, event.clientX - tearDragStartX));
+  suppressTearClick = tearDragDistance > 6;
+  tearTicket.style.setProperty("--tear-edge-x", `${tearDragDistance}px`);
+  tearTicket.style.setProperty("--tear-curl", `${Math.min(18, Math.max(5, tearDragDistance * 0.1))}px`);
+  tearTrigger.style.setProperty("--tear-x", `${tearDragDistance}px`);
+  tearTrigger.style.setProperty("--tear-rotate", `${Math.min(2.2, tearDragDistance / 110)}deg`);
+  tearTrigger.style.setProperty("--tear-tilt", `${Math.min(8, tearDragDistance / 28)}deg`);
+});
+tearTrigger.addEventListener("pointerup", (event) => {
+  if (event.pointerId !== tearPointerId) return;
+  const shouldReveal = tearDragDistance >= tearTicket.clientWidth * 0.28;
+  tearTrigger.releasePointerCapture(event.pointerId);
+  tearPointerId = null;
+  tearTicket.classList.remove("is-dragging");
+  if (shouldReveal) revealSimulation();
+  else {
+    tearTicket.style.removeProperty("--tear-edge-x");
+    tearTicket.style.removeProperty("--tear-curl");
+    tearTrigger.style.removeProperty("--tear-x");
+    tearTrigger.style.removeProperty("--tear-rotate");
+    tearTrigger.style.removeProperty("--tear-tilt");
+  }
+});
+tearTrigger.addEventListener("pointercancel", () => {
+  tearPointerId = null;
+  suppressTearClick = false;
+  tearTicket.classList.remove("is-dragging");
+  tearTicket.style.removeProperty("--tear-edge-x");
+  tearTicket.style.removeProperty("--tear-curl");
+  tearTrigger.style.removeProperty("--tear-x");
+  tearTrigger.style.removeProperty("--tear-rotate");
+  tearTrigger.style.removeProperty("--tear-tilt");
+});
+tearTrigger.addEventListener("click", () => {
+  if (suppressTearClick) { suppressTearClick = false; return; }
+  startAutomaticTear();
+});
+retrySimulation.addEventListener("click", prepareSimulation);
+simulationModal.addEventListener("click", (event) => {
+  if (event.target.closest("[data-close-simulation]")) closeSimulation();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !simulationModal.hidden) closeSimulation();
 });
 
 loadInitialState();

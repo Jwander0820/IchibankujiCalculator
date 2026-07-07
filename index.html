@@ -84,8 +84,8 @@
         <div class="ticket-edge ticket-edge--top" aria-hidden="true"></div>
         <div class="ticket-head">
           <div>
-            <p>LIVE RESULT</p>
-            <h2 id="result-title">即時判定票</h2>
+            <p>ODDS ANALYSIS</p>
+            <h2 id="result-title">抽獎機率分析</h2>
           </div>
           <span id="verdict-badge" class="verdict-badge">計算中</span>
         </div>
@@ -103,10 +103,14 @@
         </dl>
 
         <div class="milestones">
-            <p>機率參考點</p>
+          <p>機率參考點</p>
           <div class="milestone"><span>20%</span><strong id="n20">—</strong><small>抽・<span id="p20">—</span>%</small></div>
           <div class="milestone"><span>50%</span><strong id="n50">—</strong><small>抽・<span id="p50">—</span>%</small></div>
         </div>
+        <button id="simulate-btn" class="simulate-button" type="button">
+          <span><small>用目前盤面試手氣</small><strong>抽抽看！</strong></span>
+          <span aria-hidden="true">→</span>
+        </button>
         <p class="ticket-note">結果為機率估算，不代表一定中獎。請替運氣留點預算。</p>
         <div class="ticket-edge ticket-edge--bottom" aria-hidden="true"></div>
       </section>
@@ -150,6 +154,56 @@
       </div>
     </section>
   </main>
+
+  <div id="simulation-modal" class="simulation-modal" hidden>
+    <button class="simulation-backdrop" type="button" data-close-simulation aria-label="關閉模擬抽籤"></button>
+    <section class="simulation-dialog" role="dialog" aria-modal="true" aria-labelledby="simulation-title">
+      <header class="simulation-header">
+        <div>
+          <p>LUCK TEST / 模擬體驗</p>
+          <h2 id="simulation-title">撕開這張模擬籤</h2>
+        </div>
+        <button class="simulation-close" type="button" data-close-simulation aria-label="關閉">×</button>
+      </header>
+
+      <dl class="simulation-summary">
+        <div><dt>剩餘目標賞</dt><dd><strong id="sim-targets">—</strong> / <span id="sim-total">—</span> 抽</dd></div>
+        <div><dt>這次模擬</dt><dd><strong id="sim-draws">—</strong> 抽</dd></div>
+        <div><dt>至少中一賞</dt><dd><strong id="sim-probability">—</strong>%</dd></div>
+      </dl>
+
+      <div class="tear-stage">
+        <div id="tear-ticket" class="tear-ticket">
+          <div id="ticket-reveal" class="ticket-reveal" role="status" aria-live="polite">
+            <div class="ticket-reveal__copy">
+              <span id="sim-result-kicker">RESULT</span>
+              <strong id="sim-result-title">結果藏在籤紙裡</strong>
+              <p id="sim-result-detail">撕開後才會揭曉</p>
+            </div>
+          </div>
+
+          <span class="ticket-perforation" aria-hidden="true"></span>
+
+          <button id="tear-trigger" class="ticket-cover" type="button" aria-label="撕開模擬籤查看結果">
+            <span class="ticket-cover__tab">從這裡撕</span>
+            <span class="ticket-cover__copy">
+              <small>ICHIBAN KUJI / LUCK TEST</small>
+              <strong>運氣試抽券</strong>
+              <em id="sim-ticket-code">KUJI-000000</em>
+            </span>
+            <span class="ticket-cover__barcode" aria-hidden="true"></span>
+            <span class="ticket-cover__action">按住拉片往右撕，或點一下 <b>→</b></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="simulation-actions">
+        <button id="retry-simulation" class="button button--yellow" type="button">再抽一次</button>
+        <button class="button simulation-done" type="button" data-close-simulation>回到機率分析</button>
+      </div>
+      <p class="simulation-note">這是依目前盤面進行的隨機模擬，不會扣除抽數，也不會更動觀察 Set。</p>
+    </section>
+  </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <footer><span>ICHIBAN ODDS LAB</span><p>理性計算，開心抽賞。</p></footer>

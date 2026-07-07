@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="paper-title paper-desc">
+  <title id="paper-title">Torn white ticket paper</title>
+  <desc id="paper-desc">White paper revealed after the simulation ticket is torn open.</desc>
+
+  <defs>
+    <linearGradient id="paper-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ece9e1"/>
+      <stop offset="0.16" stop-color="#fffefa"/>
+      <stop offset="0.58" stop-color="#f8f6ef"/>
+      <stop offset="1" stop-color="#e9e6dd"/>
+    </linearGradient>
+  </defs>
+
+  <g id="paper-shape">
+    <path
+      id="paper-fill"
+      fill="url(#paper-gradient)"
+      d="M180 61 H220 L230 79 L260 52 H420 L430 79 L456 52 H620 L628 79 L658 52 H818 V80 L846 52 H1018 L1034 65 L1084 33 L1064 63 L1095 222 L1127 218 L1104 243 V431 L1128 461 L1096 457 L1064 615 L1084 647 L1034 614 L1018 628 H848 L825 604 L818 629 H655 L628 601 L620 629 H458 L430 601 L423 629 H260 L230 601 L221 618 H180 L150 459 L126 473 L81 416 V262 L128 209 L150 235 Z"/>
+
+    <path
+      id="paper-edge"
+      fill="none"
+      stroke="#d8d5cd"
+      stroke-width="3"
+      stroke-linejoin="round"
+      d="M180 61 H220 L230 79 L260 52 H420 L430 79 L456 52 H620 L628 79 L658 52 H818 V80 L846 52 H1018 L1034 65 L1084 33 L1064 63 L1095 222 L1127 218 L1104 243 V431 L1128 461 L1096 457 L1064 615 L1084 647 L1034 614 L1018 628 H848 L825 604 L818 629 H655 L628 601 L620 629 H458 L430 601 L423 629 H260 L230 601 L221 618 H180 L150 459 L126 473 L81 416 V262 L128 209 L150 235 Z"/>
+
+    <path
+      id="paper-highlight"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="4"
+      stroke-linecap="round"
+      opacity="0.55"
+      d="M188 70 H218 M267 61 H414 M464 61 H613 M666 61 H809 M854 61 H1009"/>
+  </g>
+</svg>

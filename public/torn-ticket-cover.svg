@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="cover-title cover-desc">
+  <title id="cover-title">Torn ticket cover</title>
+  <desc id="cover-desc">Full ticket cover for the Ichiban Kuji simulation.</desc>
+
+  <style>
+    #cover-fill { fill: var(--ticket-fill, #3a7694); }
+    #cover-outline { stroke: var(--ticket-outline, #2a617c); }
+    #pull-marker { fill: var(--pull-marker, #ffffff); }
+  </style>
+
+  <g id="cover-shape">
+    <path
+      id="cover-fill"
+      d="M180 61 H220 L230 79 L260 52 H420 L430 79 L456 52 H620 L628 79 L658 52 H818 V80 L846 52 H1018 L1034 65 L1084 33 L1064 63 L1095 222 L1127 218 L1104 243 V431 L1128 461 L1096 457 L1064 615 L1084 647 L1034 614 L1018 628 H848 L825 604 L818 629 H655 L628 601 L620 629 H458 L430 601 L423 629 H260 L230 601 L221 618 H180 L150 459 L126 473 L81 416 V262 L128 209 L150 235 Z"/>
+
+    <path
+      id="cover-outline"
+      fill="none"
+      stroke-width="2"
+      stroke-linejoin="round"
+      d="M180 61 H220 L230 79 L260 52 H420 L430 79 L456 52 H620 L628 79 L658 52 H818 V80 L846 52 H1018 L1034 65 L1084 33 L1064 63 L1095 222 L1127 218 L1104 243 V431 L1128 461 L1096 457 L1064 615 L1084 647 L1034 614 L1018 628 H848 L825 604 L818 629 H655 L628 601 L620 629 H458 L430 601 L423 629 H260 L230 601 L221 618 H180 L150 459 L126 473 L81 416 V262 L128 209 L150 235 Z"/>
+  </g>
+
+  <g id="pull-marker">
+    <path id="pull-arrow" d="M119 307 L171 336 L119 365 Z"/>
+  </g>
+</svg>
