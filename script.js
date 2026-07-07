@@ -2,6 +2,7 @@ const defaults = { total: 80, want: 5, n: 1, targetProb: 20, price: 335 };
 const MAX_SEARCH = 30;
 const STATE_KEY = "ichiban_calc_state_v2";
 const SETS_KEY = "ichiban_calc_saved_sets_v1";
+const ACTIVE_SET_KEY = "ichiban_calc_active_set_v1";
 
 const $ = (selector) => document.querySelector(selector);
 const inputs = {
@@ -21,8 +22,10 @@ const savedSetsEl = $("#saved-sets");
 const emptySetsEl = $("#empty-sets");
 const quickPresets = $(".quick-presets");
 const savedSetShortcuts = $("#saved-set-shortcuts");
+const activeSetStatus = $("#active-set-status");
 const toast = $("#toast");
 let toastTimer;
+let activeSetId = localStorage.getItem(ACTIVE_SET_KEY);
 
 function comb(n, k) {
   if (k < 0 || k > n) return 0;
@@ -83,6 +86,26 @@ function persistState(values) {
   localStorage.setItem(STATE_KEY, JSON.stringify(values));
 }
 
+function setActiveSet(id, shouldRender = true) {
+  activeSetId = id || null;
+  if (activeSetId) localStorage.setItem(ACTIVE_SET_KEY, activeSetId);
+  else localStorage.removeItem(ACTIVE_SET_KEY);
+  if (shouldRender) renderSavedSets();
+}
+
+function autosaveActiveSet(values) {
+  if (!activeSetId) return;
+  const sets = getSavedSets();
+  const index = sets.findIndex((set) => set.id === activeSetId);
+  if (index < 0) {
+    setActiveSet(null, false);
+    return;
+  }
+  sets[index] = { ...sets[index], ...values, updatedAt: Date.now() };
+  localStorage.setItem(SETS_KEY, JSON.stringify(sets));
+  renderSavedSets();
+}
+
 function getVerdict(probability, target) {
   if (hasReachedTarget(probability, target)) return { label: "達到期望", className: "is-good" };
   if (probability >= target * 0.72) return { label: "接近目標", className: "is-close" };
@@ -137,6 +160,7 @@ function calculate({ normalize = false } = {}) {
 
   renderTable(values);
   persistState(values);
+  autosaveActiveSet(values);
   return values;
 }
 
@@ -151,6 +175,7 @@ function loadInitialState() {
   Object.keys(inputs).forEach((key) => {
     if (query.has(key)) queryValues[key] = query.get(key);
   });
+  if (Object.keys(queryValues).length) setActiveSet(null, false);
   writeValues(queryValues);
 }
 
@@ -166,24 +191,31 @@ function saveSets(sets) {
 
 function renderSavedSets() {
   const sets = getSavedSets();
+  const activeSet = sets.find((set) => set.id === activeSetId);
+  if (activeSetId && !activeSet) setActiveSet(null, false);
   savedSetsEl.textContent = "";
   savedSetShortcuts.textContent = "";
   emptySetsEl.hidden = sets.length > 0;
+  activeSetStatus.hidden = !activeSet;
+  activeSetStatus.textContent = activeSet ? `● 自動儲存：${activeSet.name}` : "";
   sets.forEach((set) => {
     const probability = hyperProb(set.total, set.want, set.n) * 100;
     const card = document.createElement("article");
     card.className = "set-card";
+    card.classList.toggle("is-active", set.id === activeSetId);
     card.innerHTML = `
-      <div class="set-card__top"><span>${set.want} 個目標賞 / ${set.total} 抽</span><button type="button" data-delete="${set.id}" aria-label="刪除這個觀察 Set">×</button></div>
+      <div class="set-card__top"><span>${set.id === activeSetId ? "目前編輯 · " : ""}${set.want} 個目標賞 / ${set.total} 抽</span><button type="button" data-delete="${set.id}" aria-label="刪除這個觀察 Set">×</button></div>
       <h3>${escapeHtml(set.name)}</h3>
       <div class="set-card__odds"><strong>${probability.toFixed(1)}%</strong><span>抽 ${set.n} 次<br>${currency(set.price * set.n)}</span></div>
-      <button class="set-card__load" type="button" data-load="${set.id}">載入這個盤面 <span>→</span></button>`;
+      <button class="set-card__load" type="button" data-load="${set.id}">${set.id === activeSetId ? "編輯中・自動儲存" : "載入這個盤面"} <span>→</span></button>`;
     savedSetsEl.appendChild(card);
 
     const shortcut = document.createElement("button");
     shortcut.className = "preset-chip preset-chip--saved";
     shortcut.type = "button";
     shortcut.dataset.quickSet = set.id;
+    shortcut.classList.toggle("is-active", set.id === activeSetId);
+    shortcut.setAttribute("aria-pressed", String(set.id === activeSetId));
     shortcut.title = `${set.total} 抽・${set.want} 個目標賞・打算抽 ${set.n} 次`;
     shortcut.textContent = `★ ${set.name}`;
     savedSetShortcuts.appendChild(shortcut);
@@ -201,8 +233,11 @@ $("#save-set-form").addEventListener("submit", (event) => {
   const nameInput = $("#set-name");
   const name = nameInput.value.trim();
   if (!name) return;
+  const values = calculate({ normalize: true });
   const sets = getSavedSets();
-  sets.unshift({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), name, ...calculate({ normalize: true }), savedAt: Date.now() });
+  const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+  sets.unshift({ id, name, ...values, savedAt: Date.now() });
+  setActiveSet(id, false);
   saveSets(sets.slice(0, 8));
   nameInput.value = "";
   showToast("已保存這個觀察 Set");
@@ -213,10 +248,11 @@ savedSetsEl.addEventListener("click", (event) => {
   const deleteButton = event.target.closest("[data-delete]");
   if (loadButton) {
     const set = getSavedSets().find((item) => item.id === loadButton.dataset.load);
-    if (set) { writeValues(set); calculate({ normalize: true }); window.scrollTo({ top: 0, behavior: "smooth" }); showToast(`已載入「${set.name}」`); }
+    if (set) { setActiveSet(set.id, false); writeValues(set); calculate({ normalize: true }); window.scrollTo({ top: 0, behavior: "smooth" }); showToast(`已載入「${set.name}」，後續調整將自動儲存`); }
   }
   if (deleteButton) {
     const nextSets = getSavedSets().filter((item) => item.id !== deleteButton.dataset.delete);
+    if (deleteButton.dataset.delete === activeSetId) setActiveSet(null, false);
     saveSets(nextSets);
     showToast("已移除觀察 Set");
   }
@@ -229,11 +265,13 @@ quickPresets.addEventListener("click", (event) => {
   if (button.dataset.quickSet) {
     const set = getSavedSets().find((item) => item.id === button.dataset.quickSet);
     if (set) {
+      setActiveSet(set.id, false);
       writeValues(set);
       calculate({ normalize: true });
-      showToast(`已載入「${set.name}」`);
+      showToast(`已載入「${set.name}」，後續調整將自動儲存`);
     }
   } else {
+    setActiveSet(null);
     writeValues({ total: button.dataset.total, want: button.dataset.want, n: button.dataset.n });
     calculate({ normalize: true });
     showToast(`已帶入「${button.textContent}」`);
@@ -247,6 +285,7 @@ Object.values(inputs).forEach((input) => {
 });
 
 $("#reset-btn").addEventListener("click", () => {
+  setActiveSet(null);
   writeValues(defaults); calculate({ normalize: true }); showToast("已恢復預設盤面");
 });
 

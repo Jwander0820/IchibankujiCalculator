@@ -58,6 +58,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(231, 53, 43,
 .preset-chip { flex: 0 0 auto; padding: 9px 15px; border: 1px solid #bcb4a6; border-radius: 999px; background: rgba(255, 253, 247, .65); color: var(--ink); font-size: 13px; font-weight: 700; transition: .2s ease; }
 .preset-chip:hover { border-color: var(--red); background: var(--red); color: white; transform: translateY(-2px); }
 .preset-chip--saved { border-color: #d7b512; background: #fff4c3; }
+.preset-chip--saved.is-active { border-color: var(--green); background: var(--green); color: white; box-shadow: 0 0 0 3px rgba(8, 119, 90, .14); }
 
 .workspace-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(390px, .92fr); gap: 20px; align-items: stretch; }
 .panel, .watchlist, .probability-section { border: 1px solid rgba(78, 59, 34, .15); border-radius: var(--radius); background: rgba(255, 253, 247, .92); box-shadow: var(--shadow); }
@@ -65,6 +66,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(231, 53, 43,
 .section-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
 .section-heading h2 { margin: 0; font-size: clamp(25px, 3vw, 34px); letter-spacing: -.04em; }
 .section-heading > p, .section-heading > div > p:last-child { max-width: 480px; margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.setup-actions { display: grid; justify-items: end; gap: 8px; }
+.active-set-status { color: var(--green); font-size: 10px; font-weight: 800; }
 .text-button { padding: 5px 0; border: 0; border-bottom: 1px solid var(--ink); background: transparent; font-size: 12px; font-weight: 700; }
 
 .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 19px 16px; margin-top: 32px; }
@@ -126,6 +129,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(231, 53, 43,
 .saved-sets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 28px; }
 .set-card { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: white; transition: .2s ease; }
 .set-card:hover { border-color: #aea496; transform: translateY(-3px); box-shadow: 0 12px 28px rgba(52,35,18,.1); }
+.set-card.is-active { border-color: var(--green); box-shadow: 0 0 0 2px rgba(8, 119, 90, .12); }
+.set-card.is-active .set-card__top, .set-card.is-active .set-card__odds strong { color: var(--green); }
+.set-card.is-active .set-card__load { background: var(--green); color: white; }
 .set-card__top { display: flex; justify-content: space-between; padding: 11px 14px 0; color: var(--red); font: 600 9px/1.2 "IBM Plex Mono", monospace; }
 .set-card__top button { margin: -8px -8px 0 0; border: 0; background: none; color: var(--muted); font-size: 20px; }
 .set-card h3 { min-height: 48px; margin: 13px 14px 5px; font-size: 16px; line-height: 1.4; }
