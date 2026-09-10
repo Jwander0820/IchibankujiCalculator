@@ -43,14 +43,16 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(231, 53, 43,
 .app-shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 42px 0 80px; }
 .hero { display: grid; grid-template-columns: 1fr 260px; align-items: center; min-height: 315px; padding: 10px 3vw 34px; }
 .eyebrow, .section-kicker { margin: 0 0 10px; color: var(--red); font: 600 11px/1.2 "IBM Plex Mono", monospace; letter-spacing: .16em; }
+.eyebrow { display: flex; align-items: center; gap: 10px; }
+.brand-icon { display: block; flex: 0 0 auto; }
 .hero h1 { margin: 0; font-size: clamp(52px, 8vw, 98px); font-weight: 800; line-height: .9; letter-spacing: -.075em; }
 .hero h1 em { position: relative; color: var(--red); font-style: normal; }
 .hero h1 em::after { position: absolute; right: -.15em; bottom: -.08em; left: .05em; height: 10px; background: var(--yellow); content: ""; z-index: -1; transform: rotate(-2deg); }
 .hero-lead { max-width: 570px; margin: 25px 0 0; color: var(--muted); font-size: 16px; line-height: 1.8; }
-.hero-mark { width: 210px; height: 210px; justify-self: end; display: grid; place-content: center; text-align: center; background: var(--red); border: 9px solid var(--paper); border-radius: 50%; color: white; box-shadow: 0 0 0 2px var(--red), var(--shadow); transform: rotate(5deg); }
-.hero-mark strong { font-size: 78px; line-height: .9; }
-.hero-mark span { font-weight: 800; letter-spacing: .12em; }
-.hero-mark .hero-mark__small { font: 600 10px/1 "IBM Plex Mono", monospace; letter-spacing: .25em; }
+.hero-mark { width: 210px; justify-self: end; display: grid; justify-items: center; gap: 9px; text-align: center; }
+.hero-mark img { display: block; width: 100%; height: auto; margin-bottom: 9px; border-radius: 22%; box-shadow: var(--shadow); transform: rotate(5deg); }
+.hero-mark span { color: var(--red); font-size: 14px; font-weight: 800; letter-spacing: .08em; }
+.hero-mark small { color: var(--muted); font: 600 9px/1 "IBM Plex Mono", monospace; letter-spacing: .16em; }
 
 .quick-presets { display: flex; align-items: center; gap: 9px; margin-bottom: 18px; overflow-x: auto; scrollbar-width: none; }
 .quick-presets__label { flex: 0 0 auto; padding-right: 8px; color: var(--muted); font-size: 12px; font-weight: 700; }
@@ -227,8 +229,8 @@ footer p { margin: 0; color: #aaa49b; font-size: 11px; }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr 165px; min-height: 270px; }
-  .hero-mark { width: 145px; height: 145px; border-width: 6px; }
-  .hero-mark strong { font-size: 52px; }
+  .hero-mark { width: 145px; }
+  .hero-mark span { font-size: 12px; }
   .workspace-grid { grid-template-columns: 1fr; }
   .saved-sets { grid-template-columns: repeat(2, 1fr); }
 }

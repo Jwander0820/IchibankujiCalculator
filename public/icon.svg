@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <title>一番賞抽獎計算所</title>
+  <desc>朱紅底色上的抽賞券，以百分比符號代表抽獎機率，黃色票根與虛線呼應撕籤體驗。</desc>
+  <rect width="128" height="128" rx="28" fill="#e7352b"/>
+  <path d="M28 28H100Q108 28 108 36V54A10 10 0 0 0 108 74V92Q108 100 100 100H28Q20 100 20 92V74A10 10 0 0 0 20 54V36Q20 28 28 28Z" fill="#fffdf7"/>
+  <path d="M84 28H100Q108 28 108 36V54A10 10 0 0 0 108 74V92Q108 100 100 100H84Z" fill="#ffd735"/>
+  <path d="M84 34V40M84 49V55M84 64V70M84 79V85M84 94V100" stroke="#e7352b" stroke-width="3"/>
+  <g fill="none" stroke="#e7352b" stroke-width="7">
+    <circle cx="42" cy="48" r="6"/>
+    <path d="M40 80L64 48" stroke-linecap="round"/>
+    <circle cx="62" cy="80" r="6"/>
+  </g>
+</svg>
