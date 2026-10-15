@@ -1,5 +1,7 @@
 const defaults = { total: 80, want: 5, n: 1, targetProb: 20, price: 335 };
 const MAX_SEARCH = 30;
+const MAX_TOTAL = 10000;
+const MAX_PRICE = 1000000;
 const STATE_KEY = "ichiban_calc_state_v2";
 const SETS_KEY = "ichiban_calc_saved_sets_v1";
 const ACTIVE_SET_KEY = "ichiban_calc_active_set_v1";
@@ -41,20 +43,17 @@ let tearDragDistance = 0;
 let suppressTearClick = false;
 let tearAnimationTimer = null;
 
-function comb(n, k) {
-  if (k < 0 || k > n) return 0;
-  if (k === 0 || k === n) return 1;
-  const kk = Math.min(k, n - k);
-  let result = 1;
-  for (let i = 1; i <= kk; i += 1) result = (result * (n - i + 1)) / i;
-  return result;
-}
-
 function hyperProb(total, targets, draws) {
   if (total <= 0 || targets <= 0 || draws <= 0) return 0;
-  if (draws >= total) return 1;
   const validTargets = Math.min(targets, total);
-  return 1 - comb(total - validTargets, draws) / comb(total, draws);
+  if (draws > total - validTargets) return 1;
+  // Multiply the miss probabilities directly; combinations can overflow.
+  // Drawing tickets and placing targets are symmetric, so use the shorter loop.
+  const count = Math.min(draws, validTargets);
+  const excluded = Math.max(draws, validTargets);
+  let miss = 1;
+  for (let i = 0; i < count; i += 1) miss *= (total - excluded - i) / (total - i);
+  return 1 - miss;
 }
 
 function randomUnit() {
@@ -90,13 +89,33 @@ function currency(value) {
   return `NT$${Math.round(value).toLocaleString("zh-Hant-TW")}`;
 }
 
-function readValues() {
-  const total = Math.max(1, Math.floor(Number(inputs.total.value) || 1));
-  const want = Math.min(total, Math.max(0, Math.floor(Number(inputs.want.value) || 0)));
-  const n = Math.min(total, Math.max(1, Math.floor(Number(inputs.n.value) || 1)));
-  const targetProb = Math.min(99.9, Math.max(1, Number(inputs.targetProb.value) || 20));
-  const price = Math.max(0, Math.round(Number(inputs.price.value) || 0));
+function boundedNumber(value, fallback, min, max, round = (number) => number) {
+  const number = value === "" || value == null ? fallback : Number(value);
+  return Math.min(max, Math.max(min, round(Number.isFinite(number) ? number : fallback)));
+}
+
+function normalizeValues(raw) {
+  const total = boundedNumber(raw.total, 1, 1, MAX_TOTAL, Math.floor);
+  const want = boundedNumber(raw.want, 0, 0, total, Math.floor);
+  const n = boundedNumber(raw.n, 1, 1, total, Math.floor);
+  const targetProb = boundedNumber(raw.targetProb, 20, 1, 99.9);
+  const price = boundedNumber(raw.price, 0, 0, MAX_PRICE, Math.round);
   return { total, want, n, targetProb, price };
+}
+
+function readRawValues() {
+  return Object.fromEntries(Object.entries(inputs).map(([key, input]) => [key, input.value]));
+}
+
+function readValues() {
+  return normalizeValues(readRawValues());
+}
+
+function validationMessage(raw, values) {
+  const labels = { total: "總抽數", want: "目標賞", n: "預計抽數", targetProb: "期望命中率", price: "每抽價格" };
+  const adjusted = Object.keys(inputs).filter((key) =>
+    raw[key] === "" || raw[key] == null || !Number.isFinite(Number(raw[key])) || Number(raw[key]) !== values[key]);
+  return adjusted.length ? `已依可用範圍計算：${adjusted.map((key) => `${labels[key]} ${values[key].toLocaleString("zh-Hant-TW")}`).join("、")}。` : "";
 }
 
 function writeValues(values) {
@@ -167,7 +186,9 @@ function revealSimulation() {
   const isHit = simulatedHits > 0;
   $("#sim-result-kicker").textContent = isHit ? "TARGET HIT" : "MISS";
   $("#sim-result-title").textContent = isHit ? "中啦！" : "沒中 QQ…";
-  $("#sim-result-detail").textContent = isHit
+  $("#sim-result-detail").textContent = simulationValues.want === 0
+    ? "目前沒有目標賞，本次模擬不會中獎。"
+    : isHit
     ? `這次模擬抽中 ${simulatedHits} 個目標賞`
     : `模擬抽了 ${simulationValues.n} 次，和目標賞擦身而過`;
   ticketReveal.classList.add(isHit ? "is-hit" : "is-miss");
@@ -188,7 +209,9 @@ function stageSimulationOutcome() {
   const isHit = simulatedHits > 0;
   $("#sim-result-kicker").textContent = isHit ? "TARGET HIT" : "MISS";
   $("#sim-result-title").textContent = isHit ? "中啦！" : "沒中 QQ…";
-  $("#sim-result-detail").textContent = isHit
+  $("#sim-result-detail").textContent = simulationValues.want === 0
+    ? "目前沒有目標賞，本次模擬不會中獎。"
+    : isHit
     ? `這次模擬抽中 ${simulatedHits} 個目標賞`
     : `模擬抽了 ${simulationValues.n} 次，和目標賞擦身而過`;
   ticketReveal.setAttribute("aria-hidden", "true");
@@ -227,9 +250,11 @@ function autosaveActiveSet(values) {
   const sets = getSavedSets();
   const index = sets.findIndex((set) => set.id === activeSetId);
   if (index < 0) {
-    setActiveSet(null, false);
+    setActiveSet(null);
     return;
   }
+  // Blur follows input. Keep the same buttons alive for the pending click.
+  if (Object.keys(defaults).every((key) => sets[index][key] === values[key])) return;
   sets[index] = { ...sets[index], ...values, updatedAt: Date.now() };
   localStorage.setItem(SETS_KEY, JSON.stringify(sets));
   renderSavedSets();
@@ -251,23 +276,27 @@ function renderTable(values) {
     const row = document.createElement("tr");
     if (draws === values.n) row.classList.add("is-current");
     if (reachedTarget) row.classList.add("has-reached-target");
-    const status = reachedTarget ? "達標" : probability >= 0.5 ? "可考慮" : "觀望";
+    const status = values.want === 0 ? "無目標賞" : reachedTarget ? "達標" : probability >= 0.5 ? "可考慮" : "觀望";
     row.innerHTML = `<td><b>${draws}</b> 抽</td><td><strong>${(probability * 100).toFixed(2)}%</strong></td><td>${currency(values.price * draws)}</td><td><span class="table-status">${status}</span></td>`;
     fragment.appendChild(row);
   }
   tbody.appendChild(fragment);
 }
 
-function calculate({ normalize = false } = {}) {
-  const values = readValues();
+function calculate({ normalize = false, initialMessage = "" } = {}) {
+  const raw = readRawValues();
+  const values = normalizeValues(raw);
   if (normalize) writeValues(values);
+  inputs.want.max = values.total;
+  inputs.n.max = values.total;
 
   const probability = hyperProb(values.total, values.want, values.n);
   const target = values.targetProb / 100;
   const t20 = findMinDraws(values.total, values.want, 0.2);
   const t50 = findMinDraws(values.total, values.want, 0.5);
   const tCustom = findMinDraws(values.total, values.want, target);
-  const unavailable = "30+";
+  const noTargets = values.want === 0;
+  const unavailable = noTargets ? "—" : "30+";
 
   output.currentN.textContent = values.n;
   output.probability.textContent = (probability * 100).toFixed(2);
@@ -279,13 +308,13 @@ function calculate({ normalize = false } = {}) {
   output.n50.textContent = t50 ? t50.n : unavailable;
   output.p50.textContent = t50 ? (t50.p * 100).toFixed(1) : "—";
   output.nTarget.textContent = tCustom ? tCustom.n : unavailable;
-  output.costTarget.textContent = tCustom ? currency(values.price * tCustom.n) : "超過 30 抽";
+  output.costTarget.textContent = tCustom ? currency(values.price * tCustom.n) : noTargets ? "無法達成" : "超過 30 抽";
 
-  const verdict = getVerdict(probability, target);
+  const verdict = noTargets ? { label: "目標賞已抽完", className: "is-wait" } : getVerdict(probability, target);
   output.verdict.textContent = verdict.label;
   output.verdict.className = `verdict-badge ${verdict.className}`;
   resultTicket.classList.toggle("is-success", hasReachedTarget(probability, target));
-  output.validation.textContent = Number(inputs.want.value) > values.total ? "目標賞不能多於剩餘總抽數，已依總抽數計算。" : "";
+  output.validation.textContent = [initialMessage || validationMessage(raw, values), noTargets ? "目前已無目標賞，無法達到期望機率。" : ""].filter(Boolean).join(" ");
 
   renderTable(values);
   persistState(values);
@@ -294,9 +323,10 @@ function calculate({ normalize = false } = {}) {
 }
 
 function loadInitialState() {
+  let raw = { ...defaults };
   try {
     const saved = JSON.parse(localStorage.getItem(STATE_KEY) || localStorage.getItem("ichiban_calc_state"));
-    if (saved) writeValues({ ...defaults, ...saved });
+    if (saved && typeof saved === "object" && !Array.isArray(saved)) raw = { ...raw, ...saved };
   } catch { localStorage.removeItem(STATE_KEY); }
 
   const query = new URLSearchParams(location.search);
@@ -305,11 +335,20 @@ function loadInitialState() {
     if (query.has(key)) queryValues[key] = query.get(key);
   });
   if (Object.keys(queryValues).length) setActiveSet(null, false);
-  writeValues(queryValues);
+  raw = { ...raw, ...queryValues };
+  // Validate before assigning number inputs, which otherwise erase Infinity/NaN.
+  const values = normalizeValues(raw);
+  writeValues(values);
+  return validationMessage(raw, values);
 }
 
 function getSavedSets() {
-  try { return JSON.parse(localStorage.getItem(SETS_KEY)) || []; }
+  try {
+    const sets = JSON.parse(localStorage.getItem(SETS_KEY));
+    if (!Array.isArray(sets)) return [];
+    return sets.filter((set) => set && typeof set === "object" && typeof set.id === "string" && typeof set.name === "string")
+      .slice(0, 8).map((set) => ({ ...set, ...normalizeValues({ ...defaults, ...set }) }));
+  }
   catch { localStorage.removeItem(SETS_KEY); return []; }
 }
 
@@ -377,7 +416,7 @@ savedSetsEl.addEventListener("click", (event) => {
   const deleteButton = event.target.closest("[data-delete]");
   if (loadButton) {
     const set = getSavedSets().find((item) => item.id === loadButton.dataset.load);
-    if (set) { setActiveSet(set.id, false); writeValues(set); calculate({ normalize: true }); window.scrollTo({ top: 0, behavior: "smooth" }); showToast(`已載入「${set.name}」，後續調整將自動儲存`); }
+    if (set) { setActiveSet(set.id); writeValues(set); calculate({ normalize: true }); window.scrollTo({ top: 0, behavior: "smooth" }); showToast(`已載入「${set.name}」，後續調整將自動儲存`); }
   }
   if (deleteButton) {
     const nextSets = getSavedSets().filter((item) => item.id !== deleteButton.dataset.delete);
@@ -394,7 +433,7 @@ quickPresets.addEventListener("click", (event) => {
   if (button.dataset.quickSet) {
     const set = getSavedSets().find((item) => item.id === button.dataset.quickSet);
     if (set) {
-      setActiveSet(set.id, false);
+      setActiveSet(set.id);
       writeValues(set);
       calculate({ normalize: true });
       showToast(`已載入「${set.name}」，後續調整將自動儲存`);
@@ -484,6 +523,5 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !simulationModal.hidden) closeSimulation();
 });
 
-loadInitialState();
-calculate({ normalize: true });
+calculate({ normalize: true, initialMessage: loadInitialState() });
 renderSavedSets();

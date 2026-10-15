@@ -55,26 +55,27 @@
         <form class="controls" autocomplete="off">
           <label class="field field--strong" for="total">
             <span>剩餘總抽數</span>
-            <span class="input-shell"><input id="total" type="number" value="80" min="1" inputmode="numeric"><small>抽</small></span>
+            <span class="input-shell"><input id="total" type="number" value="80" min="1" max="10000" step="1" inputmode="numeric" aria-describedby="input-limits validation-msg"><small>抽</small></span>
           </label>
           <label class="field field--strong" for="want">
             <span>剩餘目標賞</span>
-            <span class="input-shell"><input id="want" type="number" value="5" min="0" inputmode="numeric"><small>個</small></span>
+            <span class="input-shell"><input id="want" type="number" value="5" min="0" max="10000" step="1" inputmode="numeric" aria-describedby="input-limits validation-msg"><small>個</small></span>
           </label>
           <label class="field" for="n">
             <span>打算抽幾次</span>
-            <span class="input-shell"><input id="n" type="number" value="1" min="1" inputmode="numeric"><small>抽</small></span>
+            <span class="input-shell"><input id="n" type="number" value="1" min="1" max="10000" step="1" inputmode="numeric" aria-describedby="input-limits validation-msg"><small>抽</small></span>
           </label>
           <label class="field" for="target-prob">
             <span>期望命中率</span>
-            <span class="input-shell"><input id="target-prob" type="number" value="20" min="1" max="99.9" step="0.1" inputmode="decimal"><small>%</small></span>
+            <span class="input-shell"><input id="target-prob" type="number" value="20" min="1" max="99.9" step="0.1" inputmode="decimal" aria-describedby="validation-msg"><small>%</small></span>
           </label>
           <label class="field field--wide" for="price">
             <span>每抽價格</span>
-            <span class="input-shell input-shell--currency"><small>NT$</small><input id="price" type="number" value="335" min="0" step="1" inputmode="numeric"></span>
+            <span class="input-shell input-shell--currency"><small>NT$</small><input id="price" type="number" value="335" min="0" max="1000000" step="1" inputmode="numeric" aria-describedby="input-limits validation-msg"></span>
           </label>
         </form>
 
+        <p id="input-limits" class="input-limits">總抽數最多 10,000；目標賞與預計抽數不可超過總抽數。每抽價格上限 NT$1,000,000。</p>
         <p id="validation-msg" class="validation-msg" aria-live="polite"></p>
         <div class="action-row">
           <button id="share-btn" class="button button--dark" type="button">
